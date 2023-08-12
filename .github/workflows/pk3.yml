@@ -1,0 +1,30 @@
+name: Create PK3 release
+
+on:
+  release:
+    types:
+      - created
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set PK3 Filename
+      run: echo "PK3_FILENAME=${{ github.event.repository.name }}_${{ github.ref_name }}.pk3" >> $GITHUB_ENV
+
+    - name: Zip Files
+      run: zip -r "${{ env.PK3_FILENAME }}" . -x ".*"
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: "${{ env.PK3_FILENAME }}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
